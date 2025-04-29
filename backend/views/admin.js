@@ -75,3 +75,10 @@ function loadUserFormEvents() {
 document.addEventListener('DOMContentLoaded', () => {
     loadUserFormEvents(); // Initial load
 });
+function openCreateModal() {
+    document.getElementById('createModal').style.display = 'flex';
+}
+
+function closeCreateModal() {
+    document.getElementById('createModal').style.display = 'none';
+}

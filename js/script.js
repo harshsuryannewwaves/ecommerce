@@ -153,22 +153,29 @@
 })(jQuery);
 
 const userMenu = document.getElementById("user-menu");
-const isLoggedIn = localStorage.getItem("user");
+const user = JSON.parse(localStorage.getItem("user"));
 
-if (isLoggedIn) {
+if (user) {
   userMenu.innerHTML = `
-    
-      <a href="profile.html" class="rounded-circle bg-light p-2 mx-1">
-        <svg width="24" height="24" viewBox="0 0 24 24">
-          <use xlink:href="#user"></use>
-        </svg>
-      </a>
-    
+    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <svg width="24" height="24" viewBox="0 0 24 24">
+        <use xlink:href="#user"></use>
+      </svg> ${user.name}
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+      <li><a class="dropdown-item" href="profile.html">Profile</a></li>
+      <li><a class="dropdown-item" href="orders.html">My Orders</a></li>
+      <li><a class="dropdown-item" href="address.html">My Address</a></li>
+      <li><hr class="dropdown-divider"></li>
+      <li><a class="dropdown-item text-danger" href="#" onclick="logout()">Logout</a></li>
+    </ul>
   `;
 } else {
   userMenu.innerHTML = `
-    
-      <a href="./backend/views/auth/login.php" class="btn btn-primary mx-1">Login</a>
-    
+    <a href="./backend/views/auth/login.php" class="btn btn-primary mx-1">Login</a>
   `;
+}
+function logout() {
+  localStorage.removeItem("user");
+  window.location.href = "./backend/controllers/auth.php?logout=true";
 }

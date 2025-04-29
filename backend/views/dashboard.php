@@ -4,7 +4,7 @@ requireLogin();
 $user = currentUser();
 
 if ($user['role'] === 'customer') {
-    header("Location: ../index.html");
+    header("Location: ../../index.php");
     exit;
 }
 
@@ -25,6 +25,7 @@ if ($hour < 12) {
     <meta charset="UTF-8">
     <title>Dashboard - <?= ucfirst($user['role']) ?></title>
     <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/manage-products.css">
 </head>
 
 <body>
