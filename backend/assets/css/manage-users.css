@@ -1,0 +1,261 @@
+/* General Body Styling */
+body {
+    font-family: 'Arial', sans-serif;
+    background: #f3f4f6;
+    margin: 0;
+    padding: 0;
+}
+
+/* Main Container */
+.container {
+    color: #333;
+    max-width: 1000px;
+    margin: 30px auto;
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Heading Style */
+h2 {
+    font-size: 24px;
+    font-weight: 600;
+    /* color: #2d3748; */
+    margin-bottom: 20px;
+}
+
+/* Table Styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 30px;
+    background: #ffffff;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    font-size: 16px;
+}
+
+th {
+    background-color: #f1f5f9;
+    color: #4a5568;
+}
+
+tr:nth-child(even) {
+    background-color: #f9fafb;
+}
+
+tr:hover {
+    background-color: #f1f5f9;
+}
+
+/* Button Styling */
+button {
+    cursor: pointer;
+    padding: 8px 16px;
+    font-size: 16px;
+    border-radius: 6px;
+    transition: background-color 0.3s, transform 0.3s ease;
+}
+
+button:hover {
+    background-color: #3182ce;
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Edit Button */
+.edit-btn {
+    background: none;
+    border: none;
+    color: #2d89ef;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.edit-btn:hover {
+    color: #1a202c;
+}
+
+/* Search Bar Styling */
+.search-bar {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+.search-bar input {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    width: 80%;
+    transition: border-color 0.3s;
+}
+
+.search-bar input:focus {
+    border-color: #2d89ef;
+}
+
+.search-bar button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 6px;
+    border: none;
+    background-color: #2d89ef;
+    color: white;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.search-bar button:hover {
+    background-color: #3182ce;
+}
+
+/* Pagination Styling */
+.pagination {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.pagination a {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 0 5px;
+    background-color: #e2e8f0;
+    color: #4a5568;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.pagination a:hover {
+    background-color: #3182ce;
+    color: white;
+}
+
+.pagination a.active {
+    background-color: #2d89ef;
+    color: white;
+}
+
+/* Modal Styling */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: opacity 0.3s;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    width: 450px;
+    max-width: 90%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.close {
+    font-size: 30px;
+    font-weight: 600;
+    color: #888;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close:hover {
+    color: #333;
+}
+
+/* Form and Input Styling in Modal */
+label {
+    display: block;
+    margin: 12px 0 6px;
+    font-size: 16px;
+    color: #2d3748;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+input:focus, select:focus {
+    border-color: #2d89ef;
+}
+
+.modal-content button {
+    background: #2d89ef;
+    color: white;
+    padding: 12px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.modal-content button:hover {
+    background-color: #3182ce;
+}
+
+/* Modal Transition for Smooth Appearance */
+.modal.show {
+    display: flex;
+    opacity: 1;
+}
+/* Delete Link Styling */
+.delete-link {
+    text-decoration: none;
+    color: #e53e3e;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.delete-link:hover {
+    background-color: #fef2f2;
+    color: #c53030;
+}
+
+/* Delete Icon Styling */
+.delete-link::before {
+    margin-right: 6px;
+    font-size: 18px;
+}
+
+/* Delete Confirmation */
+.delete-link.confirm-delete {
+    color: #fff;
+    background-color: #e53e3e;
+    border-radius: 4px;
+    padding: 6px 10px;
+}
+
+.delete-link.confirm-delete:hover {
+    background-color: #c53030;
+}
