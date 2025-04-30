@@ -38,6 +38,8 @@ if ($hour < 12) {
                     <li><a href="#" onclick="loadContent('manage-category')">Manage Catgeory</a></li>
                     <li><a href="#" onclick="loadContent('manage-products')">Manage Products</a></li>
                     <li><a href="#" onclick="loadContent('manage_orders')">Manage Orders</a></li>
+                    <li><a href="#" onclick="loadContent('manage_hero_images')">Manage hero banner</a></li>
+
                     <li><a href="#" onclick="loadContent('view-reports')">View Reports</a></li>
                 <?php elseif ($user['role'] === 'vendor') : ?>
                     <li><a href="#" onclick="loadContent('manage-my-products')">My Products</a></li>

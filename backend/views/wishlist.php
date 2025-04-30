@@ -1,6 +1,25 @@
 <?php
-require_once './backend/config/db.php';
 session_start();
+require_once "../config/db.php";
+
+if (!isset($_SESSION['user'])) {
+    header("Location: auth/login.php");
+    exit;
+}
+
+$userId = $_SESSION['user']['id'];
+
+$sql = "SELECT w.id AS wishlist_id, p.*, pm.media_url 
+        FROM wishlist w
+        JOIN products p ON w.product_id = p.id
+        LEFT JOIN product_media pm ON p.id = pm.product_id AND pm.media_type = 'image'
+        WHERE w.user_id = :user_id";
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute(['user_id' => $userId]);
+$result = $stmt->fetchAll();
+
+
 $user = $_SESSION['user'] ?? null;
 $stmt = $pdo->prepare("SELECT id, name FROM categories WHERE parent_id IS NULL");
 $stmt->execute();
@@ -20,9 +39,6 @@ foreach ($categories as $cat) {
     $categoryTree[$cat['parent_id']]['children'][] = $cat;
   }
 }
-//heropage
-$stmt = $pdo->query("SELECT image_url FROM hero_images ORDER BY created_at DESC");
-$slides = $stmt->fetchAll();
 ?>
 
 
@@ -122,8 +138,8 @@ $slides = $stmt->fetchAll();
 
         <div class="col-sm-4 col-lg-3 text-center text-sm-start">
           <div class="main-logo">
-            <a href="index.php">
-              <img src="images/logo/OMAIRA LLC_page-0001.jpg" alt="logo" class="img-fluid">
+            <a href="../../index.php">
+              <img src="../../images/logo/OMAIRA LLC_page-0001.jpg" alt="logo" class="img-fluid">
             </a>
           </div>
         </div>
@@ -253,182 +269,29 @@ $slides = $stmt->fetchAll();
       </div>
     </div>
   </header>
-
-  <section id="imageSlider" class="py-3">
-    <div class="container-fluid px-0">
-        <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
-            <div class="carousel-indicators">
-                <?php foreach ($slides as $index => $slide): ?>
-                    <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="<?= $index ?>" class="<?= $index === 0 ? 'active' : '' ?>"></button>
-                <?php endforeach; ?>
-            </div>
-            <div class="carousel-inner">
-                <?php foreach ($slides as $index => $slide): ?>
-                    <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
-                        <img src="./backend/<?= $slide['image_url'] ?>" class="d-block w-100" alt="Slide <?= $index + 1 ?>">
-                    </div>
-                <?php endforeach; ?>
-            </div>
+  <div class="wishlist-container">
+    <h2>My Wishlist</h2>
+    <div class="wishlist-grid">
+      <?php foreach ($result as $row): ?>
+        <div class="wishlist-card">
+          <img src="<?= $row['media_url'] ?: '../images/default.jpg' ?>" alt="<?= htmlspecialchars($row['name']) ?>">
+          <h3><?= htmlspecialchars($row['name']) ?></h3>
+          <p>$<?= number_format($row['price'], 2) ?></p>
+          <form action="../controllers/wishlist/remove.php" method="POST">
+            <input type="hidden" name="wishlist_id" value="<?= $row['wishlist_id'] ?>">
+            <button class="remove-btn">Remove</button>
+          </form>
         </div>
+      <?php endforeach; ?>
     </div>
-</section>
-
-
-  <section class="py-4 overflow-hidden">
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-md-12">
-          <div class="section-header d-flex flex-wrap justify-content-between mb-5">
-            <h2 class="section-title">Category</h2>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-12">
-          <div class="category-grid d-flex flex-wrap justify-content-between">
-            <a href="index.html" class="nav-link category-item">
-              <img src="images/category icons/office product.jpg" alt="Category Thumbnail" height="150">
-              <h3 class="category-title">Office Products</h3>
-            </a>
-            <a href="index.html" class="nav-link category-item">
-              <img src="images/category icons/branding.jpg" alt="Category Thumbnail" height="150">
-              <h3 class="category-title">Branding</h3>
-            </a>
-            <a href="index.html" class="nav-link category-item">
-              <img src="images/category icons/stationary.jpg" alt="Category Thumbnail" height="150">
-              <h3 class="category-title">Stationary</h3>
-            </a>
-            <a href="index.html" class="nav-link category-item">
-              <img src="images/category icons/home decor.jpg" alt="Category Thumbnail" height="150">
-              <h3 class="category-title">Home Decor</h3>
-            </a>
-            <a href="index.html" class="nav-link category-item">
-              <img src="images/category icons/gift.jpg" alt="Category Thumbnail" height="150">
-              <h3 class="category-title">Gift Ideas</h3>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-  <section class="py-5">
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-md-12">
-          <div class="bootstrap-tabs product-tabs">
-            <div class="tabs-header d-flex justify-content-between border-bottom my-5">
-              <h3>Products</h3>
-            </div>
-            <div class="tab-content">
-              <div class="tab-pane fade show active">
-                <div class="product-grid row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5" id="product-list">
-                  <!-- Dynamic products here -->
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-
-
-  <section id="latest-blog" class="py-5">
-    <div class="container-fluid">
-      <div class="row">
-        <div class="section-header d-flex align-items-center justify-content-between my-5">
-          <h2 class="section-title">Our Recent Blog</h2>
-          <div class="btn-wrap align-right">
-            <a href="#" class="d-flex align-items-center nav-link">Read All Articles <svg width="24" height="24">
-                <use xlink:href="#arrow-right"></use>
-              </svg></a>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-4">
-          <article class="post-item card border-0 shadow-sm p-3">
-            <div class="image-holder zoom-effect">
-              <a href="#">
-                <img src="images/blog_images/f3cbb878ef767a9facc6713c9d4495ee.jpg" alt="post" class="card-img-top">
-              </a>
-            </div>
-            <div class="card-body">
-              <div class="post-meta d-flex text-uppercase gap-3 my-2 align-items-center">
-                <div class="meta-date"><svg width="16" height="16">
-                    <use xlink:href="#calendar"></use>
-                  </svg>21 Apr 2025</div>
-              </div>
-              <div class="post-header">
-                <h3 class="post-title">
-                  <a href="#" class="text-decoration-none">The Ultimate Guide to Corporate Festive Gifting: Diwali, Christmas & More</a>
-                </h3>
-                <p>The holiday season is a way to thank customers and help businesses cultivate relationships and renew their presence in the brand sphere. The holidays are important for both keeping the business running and actually providing investment into developing a healthier culture for work,....</p>
-              </div>
-            </div>
-          </article>
-        </div>
-        <div class="col-md-4">
-          <article class="post-item card border-0 shadow-sm p-3">
-            <div class="image-holder zoom-effect">
-              <a href="#">
-                <img src="images/blog_images/1dedd705e43ee6576893501d816e3eee.jpg" alt="post" class="card-img-top">
-              </a>
-            </div>
-            <div class="card-body">
-              <div class="post-meta d-flex text-uppercase gap-3 my-2 align-items-center">
-                <div class="meta-date"><svg width="16" height="16">
-                    <use xlink:href="#calendar"></use>
-                  </svg>25 Aug 2021</div>
-                <div class="meta-categories"><svg width="16" height="16">
-                    <use xlink:href="#category"></use>
-                  </svg>trending</div>
-              </div>
-              <div class="post-header">
-                <h3 class="post-title">
-                  <a href="#" class="text-decoration-none">Corporate Gifts for Remote Teams: Keeping Employees Engaged from Afar</a>
-                </h3>
-                <p>Owing to its ease and adaptability, telecommuting has totally transformed the corporate culture. But, on the other hand, there are also some demerits, including broken teams, morale issues, and less interaction.....</p>
-              </div>
-            </div>
-          </article>
-        </div>
-        <div class="col-md-4">
-          <article class="post-item card border-0 shadow-sm p-3">
-            <div class="image-holder zoom-effect">
-              <a href="#">
-                <img src="images/blog_images/faf798812e3b5065779a0378ceed00a2.jpg" alt="post" class="card-img-top">
-              </a>
-            </div>
-            <div class="card-body">
-              <div class="post-meta d-flex text-uppercase gap-3 my-2 align-items-center">
-                <div class="meta-date"><svg width="16" height="16">
-                    <use xlink:href="#calendar"></use>
-                  </svg>28 Aug 2021</div>
-                <div class="meta-categories"><svg width="16" height="16">
-                    <use xlink:href="#category"></use>
-                  </svg>inspiration</div>
-              </div>
-              <div class="post-header">
-                <h3 class="post-title">
-                  <a href="#" class="text-decoration-none">Why Customized Gift Sets Are The Best Choice for Corporate Giveaways?</a>
-                </h3>
-                <p>If you are trying to boost the morale of your employees and increase productivity, then, giving corporate gifts can be a great idea. These types of gifts are distributed among employees to show appreciation and to new clients to develop new business relations. So,......</p>
-              </div>
-            </div>
-          </article>
-        </div>
-      </div>
-    </div>
-  </section>
+  </div>
   <footer class="py-5">
     <div class="container-fluid">
       <div class="row">
 
         <div class="col-lg-5 col-md-9 col-sm-9">
           <div class="footer-menu">
-            <img src="images/logo/OMAIRA LLC_page-0001.jpg" alt="logo" class="img-fluid" style="max-width: 80%;">
+            <img src="../../images/logo/OMAIRA LLC_page-0001.jpg" alt="logo" class="img-fluid" style="max-width: 80%;">
             <div class="social-links mt-5">
               <ul class="d-flex list-unstyled gap-2">
                 <li>
@@ -513,8 +376,8 @@ $slides = $stmt->fetchAll();
             <h5 class="widget-title">CONTACTS</h5>
             <ul class="menu-list list-unstyled">
               <li class="menu-item">337236, U.A.E.</li>
-              <li class="menu-item">Whatsapp us now: +971 4 4427840</li>
-              <li class="menu-item">Email: <a href="mailto:alomeira@omeirapp.ae?subject=Inquiry&body=Hello, I would like to know more about...">alomeira@omeirapp.ae</a></li>
+              <li class="menu-item">Whatsapp us now: +971</li>
+              <li class="menu-item">Email: <a href="mailto:alomeira@omeirapp.ae?subject=Inquiry&body=Hello, I would like to know more about...">info@</a></li>
             </ul>
           </div>
         </div>
@@ -537,75 +400,10 @@ $slides = $stmt->fetchAll();
     }
   </script>
 
-  <script src="js/jquery-1.11.0.min.js"></script>
-  <script>
-    fetch('backend/controllers/get_products.php')
-  .then(res => res.json())
-  .then(products => {
-    const container = document.getElementById('product-list');
-    container.innerHTML = '';
-    products.forEach(p => {
-      const productCard = `
-        <div class="col">
-          <div class="product-item position-relative">
-            <button onclick="addToWishlist(${p.id})"><svg width="24" height="24"><use xlink:href="#heart"></use></svg></button>
-            <figure>
-              <a href="backend/views/product_detail.php?id=${p.id}">
-                <img src="images/products/${p.media_url || 'images/default.jpg'}" class="tab-image">
-              </a>
-            </figure>
-            <h3>${p.name}</h3>
-            <span class="price">$${p.price}</span>
-            <div class="d-flex justify-content-between align-items-center">
-              <input type="number" class="form-control me-2" id="qty-${p.id}" value="1" style="width: 60px;">
-              <a href="#" onclick="addToCart(${p.id})" class="btn btn-primary btn-sm">Add to Cart</a>
-            </div>
-          </div>
-        </div>`;
-      container.innerHTML += productCard;
-    });
-  })
-  .catch(err => {
-    console.error("Error fetching products:", err);
-  });
-
-
-  function addToCart(productId) {
-    const qtyField = document.getElementById(`qty-${productId}`);
-    const qty = parseInt(qtyField.value);
-
-    if (!qty || qty <= 0) {
-        alert("Please enter a valid quantity.");
-        return;
-    }
-
-    fetch(`backend/controllers/cart/cart_add.php?product_id=${productId}&qty=${qty}`)
-        .then(res => res.text())
-        .then(msg => alert(msg))
-        .catch(err => alert("Failed to add to cart."));
-}
-
-    function addToWishlist(productId) {
-      fetch('backend/controllers/wishlist/add.php', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          body: 'product_id=' + productId
-        })
-        .then(res => {
-          if (res.redirected) {
-            window.location.href = res.url;
-          } else {
-            alert('Added to wishlist!');
-          }
-        });
-    }
-  </script>
-  <script src="js/script.js"></script>
+  <script src="../js/jquery-1.11.0.min.js"></script>
+  <script src="../js/script.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
   <script src="js/plugins.js"></script>
 </body>
-
 </html>

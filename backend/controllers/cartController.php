@@ -25,6 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$cartId, $userId]);
     }
 
-    header("Location: ../../cart.php");
+    header("Location: ../views/cart.php");
     exit;
 }

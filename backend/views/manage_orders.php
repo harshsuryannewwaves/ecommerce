@@ -8,10 +8,10 @@ if ($user['role'] !== 'admin') {
     exit;
 }
 
-require_once '../config/db.php'; // This gives you $pdo
+require_once '../config/db.php';
 
-// Handle status update
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['status'])) {
+// Handle AJAX status update
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['status']) && isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
     $orderId = intval($_POST['order_id']);
     $status = $_POST['status'];
     $allowed = ['Pending', 'Shipped', 'Delivered', 'Cancelled', 'Refunded'];
@@ -26,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['s
     } else {
         echo "<p style='color:red;'>Invalid status selected.</p>";
     }
+    exit; // stop script to prevent full page from rendering on AJAX call
 }
 
 // Fetch all orders
@@ -68,89 +69,176 @@ $orders = $stmt->fetchAll();
         </tr>
     </thead>
     <tbody>
-    <?php foreach ($orders as $order): ?>
-        <tr>
-            <td><?= $order['id'] ?></td>
-            <td><?= htmlspecialchars($order['customer_name']) ?></td>
-            <td>
-    <?= nl2br(htmlspecialchars(
-        $order['shipping_address'] . ", " .
-        $order['shipping_city'] . ", " .
-        $order['shipping_state'] . " - " .
-        $order['shipping_zip']
-    )) ?>
-</td>
+        <?php foreach ($orders as $order): ?>
+            <tr>
+                <td><?= $order['id'] ?></td>
+                <td><?= htmlspecialchars($order['customer_name']) ?></td>
+                <td>
+                    <?= nl2br(htmlspecialchars(
+                        $order['shipping_address'] . ", " .
+                            $order['shipping_city'] . ", " .
+                            $order['shipping_state'] . " - " .
+                            $order['shipping_zip']
+                    )) ?>
+                </td>
 
-<td>
-    <?= nl2br(htmlspecialchars(
-        $order['billing_address'] . ", " .
-        $order['billing_city'] . ", " .
-        $order['billing_state'] . " - " .
-        $order['billing_zip']
-    )) ?>
-</td>
+                <td>
+                    <?= nl2br(htmlspecialchars(
+                        $order['billing_address'] . ", " .
+                            $order['billing_city'] . ", " .
+                            $order['billing_state'] . " - " .
+                            $order['billing_zip']
+                    )) ?>
+                </td>
 
-            <td>₹<?= number_format($order['total'], 2) ?></td>
-            <td>
-    <form id="status-form-<?= $order['id'] ?>" method="POST" style="display:inline;">
-        <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
-        <select name="status" onchange="updateStatus(<?= $order['id'] ?>)">
-            <?php
-            $statuses = ['Pending', 'Shipped', 'Delivered', 'Cancelled', 'Refunded'];
-            foreach ($statuses as $status) {
-                $selected = (strtolower($order['status']) === strtolower($status)) ? 'selected' : '';
-                echo "<option value='$status' $selected>$status</option>";
-            }
-            ?>
-        </select>
-    </form>
-</td>
-            <td><?= date("d M Y, h:i A", strtotime($order['created_at'])) ?></td>
-            <td>
-                <?php
-                $itemStmt = $pdo->prepare("
+                <td>₹<?= number_format($order['total'], 2) ?></td>
+                <td>
+                    <form id="status-form-<?= $order['id'] ?>" method="POST" style="display:inline;">
+                        <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
+                        <select name="status" onchange="updateStatus(<?= $order['id'] ?>)">
+                            <?php
+                            $statuses = ['Pending', 'Shipped', 'Delivered', 'Cancelled', 'Refunded'];
+                            foreach ($statuses as $status) {
+                                $selected = (strtolower($order['status']) === strtolower($status)) ? 'selected' : '';
+                                echo "<option value='$status' $selected>$status</option>";
+                            }
+                            ?>
+                        </select>
+                    </form>
+                </td>
+                <td><?= date("d M Y, h:i A", strtotime($order['created_at'])) ?></td>
+                <td>
+                    <?php
+                    $itemStmt = $pdo->prepare("
                     SELECT p.name, oi.quantity 
                     FROM order_items oi 
                     JOIN products p ON p.id = oi.product_id 
                     WHERE oi.order_id = ?
                 ");
-                $itemStmt->execute([$order['id']]);
-                $items = $itemStmt->fetchAll();
+                    $itemStmt->execute([$order['id']]);
+                    $items = $itemStmt->fetchAll();
 
-                foreach ($items as $item) {
-                    echo "<div>" . htmlspecialchars($item['name']) . " × " . $item['quantity'] . "</div>";
-                }
-                ?>
-            </td>
-            <td>
-                <?php if ($order['status'] === 'Delivered'): ?>
-                    <a href="?order_id=<?= $order['id'] ?>&status=Refunded" onclick="return confirm('Refund this order?')">Refund</a>
-                <?php endif; ?>
-            </td>
+                    foreach ($items as $item) {
+                        echo "<div>" . htmlspecialchars($item['name']) . " × " . $item['quantity'] . "</div>";
+                    }
+                    ?>
+                </td>
+                <td>
+                    <?php if ($order['status'] === 'Delivered'): ?>
+                        <a href="?order_id=<?= $order['id'] ?>&status=Refunded" onclick="return confirm('Refund this order?')">Refund</a>
+                    <?php endif; ?>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+<h2 style="margin-top: 40px;">Return Requests</h2>
+
+<?php
+require_once '../config/db.php'; // adjust as needed
+
+// ✅ Handle status update first
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['return_id'], $_POST['return_status'])) {
+    $returnId = intval($_POST['return_id']);
+    $newStatus = $_POST['return_status'];
+    $allowedStatuses = ['approved', 'rejected', 'refunded'];
+
+    if (in_array($newStatus, $allowedStatuses)) {
+        $stmt = $pdo->prepare("UPDATE returns SET status = ? WHERE id = ?");
+        if ($stmt->execute([$newStatus, $returnId])) {
+            $message = "<p style='color:green;'>Return #$returnId status updated to $newStatus.</p>";
+        } else {
+            $message = "<p style='color:red;'>Failed to update return status. Please try again.</p>";
+        }
+    } else {
+        $message = "<p style='color:red;'>Invalid return status selected.</p>";
+    }
+}
+
+// ✅ Then fetch updated return records
+$returnStmt = $pdo->query("
+    SELECT r.*, 
+           p.name AS product_name, 
+           u.name AS customer_name,
+           o.created_at AS order_date
+    FROM returns r
+    JOIN orders o ON r.order_id = o.id
+    JOIN products p ON r.product_id = p.id
+    JOIN users u ON o.user_id = u.id
+    ORDER BY r.id DESC
+");
+
+$returns = $returnStmt->fetchAll();
+?>
+
+
+<table border="1" cellpadding="10" cellspacing="0" style="width: 100%; background: white;">
+    <thead style="background:#f3f4f6;">
+        <tr>
+            <th>Return ID</th>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Product</th>
+            <th>Reason</th>
+            <th>Requested At</th>
+            <th>Status</th>
+            <th>Update</th>
         </tr>
-    <?php endforeach; ?>
+    </thead>
+    <tbody>
+        <?php foreach ($returns as $return): ?>
+            <tr>
+                <td><?= $return['id'] ?></td>
+                <td><?= $return['order_id'] ?></td>
+                <td><?= htmlspecialchars($return['customer_name']) ?></td>
+                <td><?= htmlspecialchars($return['product_name']) ?></td>
+                <td><?= nl2br(htmlspecialchars($return['reason'])) ?></td>
+                <td><?= date("d M Y, h:i A", strtotime($return['created_at'] ?? $return['order_date'])) ?></td>
+                <td><?= ucfirst($return['status']) ?></td>
+                <td>
+                    <?php if ($return['status'] === 'requested'): ?>
+                        <form id="return-status-form-<?= $return['id'] ?>" style="display:inline;">
+                            <input type="hidden" name="return_id" value="<?= $return['id'] ?>">
+                            <select name="return_status" onchange="updateReturnStatus(<?= $return['id'] ?>)">
+                                <option value="">--Change Status--</option>
+                                <option value="approved">Approve</option>
+                                <option value="rejected">Reject</option>
+                                <option value="refunded">Refund</option>
+                            </select>
+                        </form>
+                        <div id="return-msg-<?= $return['id'] ?>"></div>
+                    <?php else: ?>
+                        <em>No action</em>
+                    <?php endif; ?>
+
+
+                </td>
+            </tr>
+        <?php endforeach; ?>
     </tbody>
 </table>
 <script>
     function updateStatus(orderId) {
-        // Get the selected status value
-        var status = document.querySelector(`#status-form-${orderId} select[name="status"]`).value;
-        
-        // Create a new FormData object to hold the form data
-        var formData = new FormData();
-        formData.append('order_id', orderId);
-        formData.append('status', status);
-        
-        // Send the data using fetch API (AJAX)
-        fetch('path_to_this_php_file.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.text())
-        .then(responseText => {
-            // Optionally, update the status text on the page
-            document.querySelector(`#status-form-${orderId} select[name="status"]`).parentElement.innerHTML = responseText;
-        })
-        .catch(error => console.error('Error:', error));
+        const form = document.querySelector(`#status-form-${orderId}`);
+        const formData = new FormData(form);
+
+        fetch('manage_orders.php', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => response.text())
+            .then(responseText => {
+                const msgBox = document.createElement('div');
+                msgBox.innerHTML = responseText;
+                msgBox.style.marginTop = '10px';
+                form.parentElement.appendChild(msgBox);
+                setTimeout(() => {
+                    msgBox.remove();
+                }, 3000);
+            })
+            .catch(error => console.error('Error:', error));
     }
 </script>

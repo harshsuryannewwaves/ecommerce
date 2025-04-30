@@ -82,3 +82,42 @@ function openCreateModal() {
 function closeCreateModal() {
     document.getElementById('createModal').style.display = 'none';
 }
+function updateStatus(orderId) {
+    const form = document.querySelector(`#status-form-${orderId}`);
+    const formData = new FormData(form);
+
+    fetch('manage_orders.php', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(response => response.text())
+    .then(responseText => {
+        const msgBox = document.createElement('div');
+        msgBox.innerHTML = responseText;
+        msgBox.style.marginTop = '10px';
+        form.parentElement.appendChild(msgBox);
+        setTimeout(() => {
+            msgBox.remove();
+        }, 3000);
+    })
+    .catch(error => console.error('Error:', error));
+}
+function updateReturnStatus(returnId) {
+    const form = document.querySelector(`#return-status-form-${returnId}`);
+    const formData = new FormData(form);
+
+    fetch('../controllers/update_return_status.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.text())
+    .then(response => {
+        const msgDiv = document.querySelector(`#return-msg-${returnId}`);
+        msgDiv.innerHTML = response;
+        setTimeout(() => msgDiv.innerHTML = '', 3000);
+    })
+    .catch(err => console.error('Error:', err));
+}

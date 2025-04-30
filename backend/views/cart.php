@@ -20,11 +20,14 @@ $stmt = $pdo->prepare("
         p.price,
         pv.attribute_name,
         pv.attribute_value,
-        ci.quantity
+        ci.quantity,
+        pm.media_url AS image
     FROM cart_items ci
     JOIN products p ON ci.product_id = p.id
     LEFT JOIN product_variants pv ON ci.variant_id = pv.id
+    LEFT JOIN product_media pm ON pm.product_id = p.id AND pm.media_type = 'image'
     WHERE ci.user_id = ?
+    GROUP BY ci.id
 ");
 $stmt->execute([$userId]);
 $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -64,7 +67,7 @@ foreach ($cartItems as $item) {
       <?php foreach ($cartItems as $item): ?>
         <tr>
           <td>
-            <img src="./images/products/<?= htmlspecialchars($item['image']) ?>" class="product-thumb" alt="Product">
+            <img src="../../images/products/<?= htmlspecialchars($item['image']) ?>" class="product-thumb" alt="Product" height="100">
             <?= htmlspecialchars($item['product_name']) ?>
           </td>
           <td>
@@ -72,7 +75,7 @@ foreach ($cartItems as $item) {
           </td>
           <td><?= number_format($item['price'], 2) ?></td>
           <td>
-            <form action="./backend/controllers/cartController.php" method="POST" class="d-inline">
+            <form action="../controllers/cartController.php" method="POST" class="d-inline">
               <input type="hidden" name="cart_id" value="<?= $item['cart_id'] ?>">
               <input type="number" name="quantity" value="<?= $item['quantity'] ?>" min="1" class="form-control form-control-sm quantity-input">
               <button type="submit" name="update" class="btn btn-sm btn-outline-primary mt-1">Update</button>
@@ -80,7 +83,7 @@ foreach ($cartItems as $item) {
           </td>
           <td><?= number_format($item['price'] * $item['quantity'], 2) ?></td>
           <td>
-            <form action="./backend/controllers/cartController.php" method="POST">
+            <form action="../controllers/cartController.php" method="POST">
               <input type="hidden" name="cart_id" value="<?= $item['cart_id'] ?>">
               <button type="submit" name="delete" class="btn btn-sm btn-outline-danger">Remove</button>
             </form>

@@ -1,0 +1,112 @@
+.orders-container {
+    max-width: 1000px;
+    margin: 30px auto;
+    font-family: Arial, sans-serif;
+    color: #333;
+}
+
+.order-block {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 25px;
+    background: #fafafa;
+}
+
+.order-block h3 {
+    margin-top: 0;
+    font-size: 18px;
+    color: #444;
+}
+
+.order-items {
+    margin-top: 15px;
+}
+
+.order-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.order-item img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    margin-right: 15px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.order-item-details {
+    flex: 1;
+}
+
+.product-name {
+    font-weight: bold;
+    font-size: 16px;
+    margin: 0;
+}
+
+.product-info {
+    font-size: 14px;
+    color: #666;
+}
+
+.return-form textarea {
+    width: 100%;
+    height: 60px;
+    margin-top: 10px;
+    padding: 8px;
+    font-size: 14px;
+    resize: vertical;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.return-form button {
+    margin-top: 8px;
+    padding: 8px 15px;
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.return-form button:hover {
+    background-color: #0055aa;
+}
+
+.return-status {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.return-status.approved {
+    background-color: #e6f7e6;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+}
+
+.return-status.rejected {
+    background-color: #ffe6e6;
+    color: #c62828;
+    border: 1px solid #ef9a9a;
+}
+
+.return-status.refunded {
+    background-color: #e6f0ff;
+    color: #1565c0;
+    border: 1px solid #90caf9;
+}
+
+.return-status.requested {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}

@@ -154,7 +154,7 @@
 
 const userMenu = document.getElementById("user-menu");
 const user = JSON.parse(localStorage.getItem("user"));
-
+console.log(user);
 if (user) {
   userMenu.innerHTML = `
     <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -164,8 +164,8 @@ if (user) {
     </a>
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
       <li><a class="dropdown-item" href="profile.html">Profile</a></li>
-      <li><a class="dropdown-item" href="orders.html">My Orders</a></li>
-      <li><a class="dropdown-item" href="address.html">My Address</a></li>
+      <li><a class="dropdown-item" href="./backend/views/my_orders.php">My Orders</a></li>
+      <li><a class="dropdown-item" href="./backend/views/address.php">My Address</a></li>
       <li><hr class="dropdown-divider"></li>
       <li><a class="dropdown-item text-danger" href="#" onclick="logout()">Logout</a></li>
     </ul>
@@ -175,6 +175,8 @@ if (user) {
     <a href="./backend/views/auth/login.php" class="btn btn-primary mx-1">Login</a>
   `;
 }
+
+
 function logout() {
   localStorage.removeItem("user");
   window.location.href = "./backend/controllers/auth.php?logout=true";

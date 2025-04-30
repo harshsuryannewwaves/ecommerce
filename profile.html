@@ -55,6 +55,7 @@
   <script>
     // Simulate user data from localStorage
     const userData = JSON.parse(localStorage.getItem("user"));
+    console.log(userData.name);
     if (userData) {
       document.getElementById("name").textContent = userData.name;
       document.getElementById("email").textContent = userData.email;
